@@ -47,6 +47,9 @@ router.delete("/:contactId", async (req, res, next) => {
     if (!result) {
       HttpError(404, "Not found");
     }
+    res.json({
+      message: "Delete success"
+    });
   } catch (err) {
     next(err);
   }
