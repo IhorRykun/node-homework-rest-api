@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const contact = require("../../models/contacts");
 const HttpError = require("../../helpers/httpEror");
-const addShemas = require("../../shemas/contacts");
+const shemas = require("../../shemas/contacts");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -28,7 +28,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = addShemas.validate(req.body);
+    const { error } = shemas.addShemas.validate(req.body);
     if (error) {
       HttpError(400, error.message);
     }
@@ -57,7 +57,7 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const { error } = addShemas.validate(req.body);
+    const { error } = shemas.updateShemas.validate(req.body);
     if (error) {
       HttpError(400, error.message);
     }
