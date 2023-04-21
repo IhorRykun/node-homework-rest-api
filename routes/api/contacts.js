@@ -13,10 +13,10 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:contactId", async (req, res, next) => {
+router.get("/:id", async (req, res, next) => {
   try {
-    const { contactId } = req.params;
-    const result = await contact.getContactById(contactId);
+    const { id } = req.params;
+    const result = await contact.getContactById(id);
     if (!result) {
       HttpError(404, "Not found");
     }
@@ -28,21 +28,23 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = shemas.addShemas.validate(req.body);
+    const body = req.body;
+    const { error } = shemas.addShemas.validate(body);
     if (error) {
       HttpError(400, error.message);
     }
-    const result = await contact.addContact(req.body);
+    const result = await contact.addContact(body);
     res.status(201).json(result);
   } catch (err) {
     next(err);
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:id", async (req, res, next) => {
   try {
-    const { contactId } = req.params;
-    const result = await contact.removeContact(contactId, req.body);
+    const body = req.body;
+    const { id } = req.params;
+    const result = await contact.removeContact(id, body);
 
     if (!result) {
       HttpError(404, "Not found");
@@ -55,14 +57,16 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:id", async (req, res, next) => {
   try {
-    const { error } = shemas.updateShemas.validate(req.body);
+    const body = req.body;
+    const { error } = shemas.updateShemas.validate(body);
+
     if (error) {
       HttpError(400, error.message);
     }
-    const { contactId } = req.params;
-    const result = await contact.updateContact(contactId, req.body);
+    const { id } = req.params;
+    const result = await contact.updateContact(id, body);
     if (!result) {
       HttpError(404, "Not found");
     }
