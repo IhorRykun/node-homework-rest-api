@@ -1,25 +1,78 @@
-const express = require('express')
+const express = require("express");
+const router = express.Router();
+const contact = require("../../models/contacts");
+const HttpError = require("../../helpers/httpEror");
+const shemas = require("../../shemas/contacts");
 
-const router = express.Router()
+router.get("/", async (req, res, next) => {
+  try {
+    const result = await contact.listContacts();
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.get('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/:id", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await contact.getContactById(id);
+    if (!result) {
+      HttpError(404, "Not found");
+    }
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.get('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.post("/", async (req, res, next) => {
+  try {
+    const body = req.body;
+    const { error } = shemas.addShemas.validate(body);
+    if (error) {
+      HttpError(400, error.message);
+    }
+    const result = await contact.addContact(body);
+    res.status(201).json(result);
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const body = req.body;
+    const { id } = req.params;
+    const result = await contact.removeContact(id, body);
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+    if (!result) {
+      HttpError(404, "Not found");
+    }
+    res.json({
+      message: "Delete success"
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.put("/:id", async (req, res, next) => {
+  try {
+    const { error } = shemas.updateShemas.validate(req.body);
 
-module.exports = router
+    if (error) {
+      HttpError(400, error.message);
+    }
+    const { id } = req.params;
+    const result = await contact.updateContact(id, req.body);
+    if (!result) {
+      HttpError(404, "Not found");
+    }
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
