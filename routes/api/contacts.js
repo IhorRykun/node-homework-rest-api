@@ -59,14 +59,14 @@ router.delete("/:id", async (req, res, next) => {
 
 router.put("/:id", async (req, res, next) => {
   try {
-    const body = req.body;
-    const { error } = shemas.updateShemas.validate(body);
+    const { name, phone, email } = req.body;
+    const { error } = shemas.updateShemas.validate(req.body);
 
     if (error) {
       HttpError(400, error.message);
     }
     const { id } = req.params;
-    const result = await contact.updateContact(id, body);
+    const result = await contact.updateContact(id, name, phone, email);
     if (!result) {
       HttpError(404, "Not found");
     }
