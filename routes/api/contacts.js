@@ -79,6 +79,11 @@ router.put("/:id", async (req, res, next) => {
 
 router.patch("/:id/favorite", async (req, res, next) => {
   try {
+    const { error } = schemas.updateFavoriteSchemas.validate(req.body);
+
+    if (error) {
+      HttpError(400, error.message);
+    }
     const { id } = req.params;
     const result = await Contacts.findByIdAndUpdate(id, req.body, {
       new: true
