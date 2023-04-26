@@ -27,8 +27,12 @@ router.get("/:id", async (req, res, next) => {
 });
 
 router.post("/", async (req, res, next) => {
+  const body = req.body;
   try {
-    const body = req.body;
+    const { error } = schemas.addSchemas.validate(body);
+    if (error) {
+      HttpError(400, error.message);
+    }
     const result = await Contacts.create(body);
     res.status(200).json(result);
   } catch (err) {
@@ -68,6 +72,21 @@ router.put("/:id", async (req, res, next) => {
       HttpError(404, "Not found");
     }
     res.json(result);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch("/:id/favorite", async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await Contacts.findByIdAndUpdate(id, req.body, {
+      new: true
+    });
+    if (!result) {
+      throw HttpError(404, "Not found");
+    }
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }
