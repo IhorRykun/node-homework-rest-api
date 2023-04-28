@@ -2,7 +2,11 @@ const express = require("express");
 const router = express.Router();
 const Contacts = require("../../models/contact");
 const HttpError = require("../../helpers/httpEror");
-const schemas = require("../../shemas/contacts");
+const {
+  updateSchemas,
+  addSchemas,
+  updateFavoriteSchemas
+} = require("../../shemas/contacts");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -29,12 +33,12 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   const body = req.body;
   try {
-    const { error } = schemas.addSchemas.validate(body);
+    const { error } = addSchemas.validate(body);
     if (error) {
       HttpError(400, error.message);
     }
     const result = await Contacts.create(body);
-    res.status(200).json(result);
+    res.status(201).json(result);
   } catch (err) {
     next(err);
   }
@@ -59,7 +63,7 @@ router.delete("/:id", async (req, res, next) => {
 
 router.put("/:id", async (req, res, next) => {
   try {
-    const { error } = schemas.updateSchemas.validate(req.body);
+    const { error } = updateSchemas.validate(req.body);
 
     if (error) {
       HttpError(400, error.message);
@@ -79,7 +83,7 @@ router.put("/:id", async (req, res, next) => {
 
 router.patch("/:id/favorite", async (req, res, next) => {
   try {
-    const { error } = schemas.updateFavoriteSchemas.validate(req.body);
+    const { error } = updateFavoriteSchemas.validate(req.body);
 
     if (error) {
       HttpError(400, error.message);
