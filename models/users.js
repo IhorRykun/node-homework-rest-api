@@ -18,12 +18,9 @@ const usersSchema = new Schema(
     },
     token: String
   },
-  { versionKey: false }
+  { versionKey: false, timestamps: true }
 );
-
 
 const Users = model("users", usersSchema);
 
-
 module.exports = Users;
-
