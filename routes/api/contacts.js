@@ -1,104 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const Contacts = require("../../models/contact");
-const HttpError = require("../../helpers/httpEror");
 const {
-  updateSchemas,
-  addSchemas,
-  updateFavoriteSchemas
-} = require("../../shemas/contacts");
+  getAllContacts,
+  getCotactId,
+  createContact,
+  deleteContact,
+  updateContact,
+  favoriteContacts
+} = require("../../controlers/contacts");
 
-router.get("/", async (req, res, next) => {
-  try {
-    const result = await Contacts.find();
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/", getAllContacts);
 
-router.get("/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const result = await Contacts.findById(id);
-    if (!result) {
-      HttpError(404, "Not found");
-    }
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.get("/:id", getCotactId);
 
-router.post("/", async (req, res, next) => {
-  const body = req.body;
-  try {
-    const { error } = addSchemas.validate(body);
-    if (error) {
-      HttpError(400, error.message);
-    }
-    const result = await Contacts.create(body);
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.post("/", createContact);
 
-router.delete("/:id", async (req, res, next) => {
-  try {
-    const body = req.body;
-    const { id } = req.params;
-    const result = await Contacts.findByIdAndRemove(id, body);
+router.delete("/:id", deleteContact);
 
-    if (!result) {
-      HttpError(404, "Not found");
-    }
-    res.json({
-      message: "Delete success"
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+router.put("/:id", updateContact);
 
-router.put("/:id", async (req, res, next) => {
-  try {
-    const { error } = updateSchemas.validate(req.body);
-
-    if (error) {
-      HttpError(400, error.message);
-    }
-    const { id } = req.params;
-    const result = await Contacts.findByIdAndUpdate(id, req.body, {
-      new: true
-    });
-    if (!result) {
-      HttpError(404, "Not found");
-    }
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.patch("/:id/favorite", async (req, res, next) => {
-  try {
-    const { error } = updateFavoriteSchemas.validate(req.body);
-
-    if (error) {
-      HttpError(400, error.message);
-    }
-    const { id } = req.params;
-    const result = await Contacts.findByIdAndUpdate(id, req.body, {
-      new: true
-    });
-    if (!result) {
-      throw HttpError(404, "Not found");
-    }
-    res.status(201).json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.patch("/:id/favorite", favoriteContacts);
 
 module.exports = router;
