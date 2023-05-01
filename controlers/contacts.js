@@ -1,5 +1,5 @@
 const Contacts = require("../models/contact");
-const HttpError = require("../helpers/httpEror");
+const HttpError = require("../helpers/httpErorr");
 const {
   updateSchemas,
   addSchemas,
@@ -15,7 +15,7 @@ const getAllContacts = async (req, res, next) => {
   }
 };
 
-const getCotactId = async (req, res, next) => {
+const getContactId = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await Contacts.findById(id);
@@ -103,7 +103,7 @@ const favoriteContacts = async (req, res, next) => {
 module.exports = {
   getAllContacts,
   createContact,
-  getCotactId,
+  getContactId,
   deleteContact,
   updateContact,
   favoriteContacts
