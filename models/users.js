@@ -1,4 +1,5 @@
 const { model, Schema } = require("mongoose");
+const hendleMongooseError = require("../helpers/hendleError");
 
 const usersSchema = new Schema(
   {
@@ -20,6 +21,8 @@ const usersSchema = new Schema(
   },
   { versionKey: false, timestamps: true }
 );
+
+usersSchema.post("save", hendleMongooseError);
 
 const Users = model("users", usersSchema);
 

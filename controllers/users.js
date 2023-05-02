@@ -1,7 +1,8 @@
 const Users = require("../models/users");
-const HttpError = require("../helpers/httpErorr");
+const HttpError = require("../helpers/httpError");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { registerSchema, loginSchenas } = require("../shemas/users");
 
 require("dotenv").config();
 
@@ -10,6 +11,10 @@ const { SECRET_KEY } = process.env;
 const userRegistration = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const { error } = registerSchema.validate(req.body);
+    if (error) {
+      HttpError(400, error.message);
+    }
     const user = await Users.findOne({ email });
     if (user) {
       throw HttpError(409, "Email already in use");
@@ -26,8 +31,12 @@ const userRegistration = async (req, res, next) => {
   }
 };
 
-const userLogin = async (req, res) => {
+const userLogin = async (req, res, next) => {
   const { email, password } = req.body;
+  const { error } = loginSchenas.validate(req.body);
+  if (error) {
+    HttpError(400, error.message);
+  }
   const user = await Users.findOne({ email });
   if (!user) {
     HttpError(401, "Email or password invalid");

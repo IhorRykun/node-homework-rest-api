@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const hendleMongooseError = require("../helpers/hendleError");
 
 const contactSchema = new Schema(
   {
@@ -15,10 +16,16 @@ const contactSchema = new Schema(
     favorite: {
       type: Boolean,
       default: false
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "user"
     }
   },
   { versionKey: false }
 );
+
+contactSchema.post("save", hendleMongooseError);
 
 const Contact = model("contacts", contactSchema);
 

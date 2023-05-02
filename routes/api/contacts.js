@@ -7,17 +7,18 @@ const {
   deleteContact,
   updateContact,
   favoriteContacts
-} = require("../../controlers/contacts");
+} = require("../../controllers/contacts");
 
-router.get("/", getAllContacts);
 
-router.get("/:id", getContactId);
+router.get("/",  getAllContacts);
 
-router.post("/", createContact);
+router.get("/:id",  getContactId);
+
+router.post("/",  createContact);
 
 router.delete("/:id", deleteContact);
 
-router.put("/:id", updateContact);
+router.put("/:id",  updateContact);
 
 router.patch("/:id/favorite", favoriteContacts);
 

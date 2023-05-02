@@ -1,5 +1,5 @@
 const Contacts = require("../models/contact");
-const HttpError = require("../helpers/httpErorr");
+const HttpError = require("../helpers/httpError");
 const {
   updateSchemas,
   addSchemas,
