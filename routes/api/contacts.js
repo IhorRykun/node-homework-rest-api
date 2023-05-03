@@ -8,17 +8,17 @@ const {
   updateContact,
   favoriteContacts
 } = require("../../controllers/contacts");
+const authenticate  = require("../../middleware/auntificate");
 
+router.get("/", authenticate, getAllContacts);
 
-router.get("/",  getAllContacts);
+router.get("/:id", getContactId);
 
-router.get("/:id",  getContactId);
-
-router.post("/",  createContact);
+router.post("/", createContact);
 
 router.delete("/:id", deleteContact);
 
-router.put("/:id",  updateContact);
+router.put("/:id", updateContact);
 
 router.patch("/:id/favorite", favoriteContacts);
 

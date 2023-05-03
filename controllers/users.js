@@ -2,7 +2,7 @@ const Users = require("../models/users");
 const HttpError = require("../helpers/httpError");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { registerSchema, loginSchenas } = require("../shemas/users");
+const { registerSchemas, loginSchemas } = require("../shemas/users");
 
 require("dotenv").config();
 
@@ -11,7 +11,7 @@ const { SECRET_KEY } = process.env;
 const userRegistration = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const { error } = registerSchema.validate(req.body);
+    const { error } = registerSchemas.validate(req.body);
     if (error) {
       HttpError(400, error.message);
     }
@@ -26,14 +26,14 @@ const userRegistration = async (req, res, next) => {
       email: newUsers.email,
       password: newUsers.password
     });
-  } catch (error) {
-    next(error);
+  } catch {
+    next(HttpError(401));
   }
 };
 
-const userLogin = async (req, res, next) => {
+const userLogin = async (req, res) => {
   const { email, password } = req.body;
-  const { error } = loginSchenas.validate(req.body);
+  const { error } = loginSchemas.validate(req.body);
   if (error) {
     HttpError(400, error.message);
   }
