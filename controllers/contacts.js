@@ -8,7 +8,8 @@ const {
 
 const getAllContacts = async (req, res, next) => {
   try {
-    const result = await Contacts.find();
+    const { _id: owner } = req.user;
+    const result = await Contacts.find(owner);
     res.json(result);
   } catch (err) {
     next(err);
@@ -36,7 +37,8 @@ const createContact = async (req, res, next) => {
     if (error) {
       HttpError(400, error.message);
     }
-    const result = await Contacts.create(body);
+    const { _id: owner } = req.user;
+    const result = await Contacts.create({ ...body, owner });
     res.status(201).json(result);
   } catch (err) {
     next(err);

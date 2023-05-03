@@ -3,21 +3,28 @@ const hendleMongooseError = require("../helpers/hendleError");
 
 const usersSchema = new Schema(
   {
-    password: {
-      type: String,
-      required: [true, "Set password for user"]
+    name: {
+      type: String
     },
     email: {
       type: String,
-      required: [true, "Email is required"],
-      unique: true
+      unique: true,
+      required: [true, "Email is required"]
+    },
+    password: {
+      type: String,
+      minlength: 6,
+      required: [true, "Password is required"]
     },
     subscription: {
       type: String,
       enum: ["starter", "pro", "business"],
       default: "starter"
     },
-    token: String
+    token: {
+      type: String,
+      default: null
+    }
   },
   { versionKey: false, timestamps: true }
 );

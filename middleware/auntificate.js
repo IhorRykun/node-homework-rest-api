@@ -1,28 +1,33 @@
 const jwt = require("jsonwebtoken");
-const { Users } = require("../models/users");
+
 const HttpError = require("../helpers/httpError");
+const Users = require("../models/users");
 require("dotenv").config();
 
 const { SECRET_KEY } = process.env;
 
-const authenticate = async (req, res, next) => {
+const authentificate = async (req, res, next) => {
   const { authorization = "" } = req.headers;
   const [bearer, token] = authorization.split(" ");
+  console.log(authorization);
+  console.log(token);
+  console.log(bearer);
+
   if (bearer !== "Bearer") {
     next(HttpError(401));
   }
   try {
     const { id } = jwt.verify(token, SECRET_KEY);
     const user = await Users.findById(id);
-    if (!user) {
+    console.log(user);
+    if (!user || !user.token || user.token !== token) {
       next(HttpError(401));
     }
-   req.user = user;
-   console.log(user);
+    req.user = user;
     next();
   } catch {
-    next(HttpError(401, "invalid token"));
+    next(HttpError(401));
   }
 };
 
-module.exports = authenticate;
+module.exports = authentificate;
