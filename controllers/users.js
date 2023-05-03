@@ -16,14 +16,16 @@ const userRegistration = async (req, res, next) => {
     HttpError(400, error.message);
   }
   if (user) {
-    throw HttpError(409, "Email already in use");
+    throw HttpError(409, "Email in use");
   }
   const hasPassword = await bcrypt.hash(password, 10);
 
   const newUsers = await Users.create({ ...req.body, password: hasPassword });
   res.status(201).json({
-    email: newUsers.email,
-    password: newUsers.password
+    user: {
+      email: newUsers.email,
+      subscription: "starter"
+    }
   });
 };
 
@@ -52,7 +54,8 @@ const userLogin = async (req, res) => {
     seccuse: true,
     token,
     user: {
-      email: user.email
+      email: user.email,
+      name: user.name
     }
   });
 };
