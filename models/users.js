@@ -4,7 +4,8 @@ const hendleMongooseError = require("../helpers/hendleError");
 const usersSchema = new Schema(
   {
     name: {
-      type: String
+      type: String,
+      required: true
     },
     email: {
       type: String,

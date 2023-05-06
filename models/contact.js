@@ -9,22 +9,25 @@ const contactSchema = new Schema(
     },
     email: {
       type: String,
-      required: true,
-      unique: true
+      unique: true,
+      required: [true, "Set email for contact"]
     },
     phone: {
-      type: String
+      type: String,
+      unique: true,
+      required: [true, "Set phone for contact"]
     },
+
     favorite: {
       type: Boolean,
       default: false
     },
     owner: {
       type: Schema.Types.ObjectId,
-      ref: "user"
+      ref: "users"
     }
   },
-  { versionKey: false }
+  { versionKey: false, timestamps: true }
 );
 
 contactSchema.post("save", hendleMongooseError);

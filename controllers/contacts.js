@@ -4,25 +4,25 @@ const {
   updateSchemas,
   addSchemas,
   updateFavoriteSchemas
-} = require("../shemas/contacts");
+} = require("../schemas/contacts");
 
 const getAllContacts = async (req, res, next) => {
   try {
     const { _id: owner } = req.user;
-    const { page = 1, limit = 10, favorite = "" } = req.query;
+    const { page = 1, limit = 5, favorite = "" } = req.query;
     const skip = (page - 1) * limit;
     if (favorite === "") {
       const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
         skip,
         limit
-      }).populate("owner", "name", "email");
+      }).populate("owner", "name email");
       res.json(result);
     } else {
       const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
         skip,
         limit
       })
-        .populate("owner", "name", "email")
+        .populate("owner", "name email")
         .find({ favorite: { $eq: favorite } });
       res.json(result);
     }
