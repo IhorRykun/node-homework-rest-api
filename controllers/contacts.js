@@ -10,12 +10,28 @@ const getAllContacts = async (req, res, next) => {
   try {
     const { _id: owner } = req.user;
     const { page = 1, limit = 10 } = req.query;
+    const { favorite } = req.query;
     const skip = (page - 1) * limit;
-    const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
-      skip,
-      limit
-    }).populate("owner", "name email");
-    res.json(result);
+    if (!favorite) {
+      const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
+        skip,
+        limit
+      }).populate("owner", "name email");
+      res.json(result);
+
+      if (favorite) {
+        const boolValue = favorite === "true";
+        const result = await Contacts.find(
+          { owner, favorite: { $eq: boolValue } },
+          "-createdAt -updatedAt",
+          {
+            skip,
+            limit
+          }
+        );
+        res.json(result);
+      }
+    }
   } catch {
     next(HttpError(404));
   }
@@ -73,6 +89,7 @@ const updateContact = async (req, res, next) => {
       HttpError(400, error.message);
     }
     const { id } = req.params;
+
     const result = await Contacts.findByIdAndUpdate(id, req.body, {
       new: true
     });
