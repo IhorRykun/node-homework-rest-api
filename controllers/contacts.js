@@ -23,8 +23,8 @@ const getAllContacts = async (req, res, next) => {
 
 const getContactId = async (req, res, next) => {
   try {
-    const { id: owner } = req.user;
-    const result = await Contacts.find({ owner });
+    const { id } = req.params;
+    const result = await Contacts.findById(id);
     if (!result) {
       HttpError(404, "Not found");
     }
@@ -36,7 +36,6 @@ const getContactId = async (req, res, next) => {
 
 const createContact = async (req, res, next) => {
   const body = req.body;
-
   try {
     const { error } = addSchemas.validate(body);
     if (error) {
@@ -52,9 +51,8 @@ const createContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   try {
-    const body = req.body;
-    const { _id: owner } = req.user;
-    const result = await Contacts.findByIdAndRemove(owner, body);
+    const { id } = req.params;
+    const result = await Contacts.findByIdAndRemove(id);
 
     if (!result) {
       HttpError(404, "Not found");
@@ -74,11 +72,8 @@ const updateContact = async (req, res, next) => {
     if (error) {
       HttpError(400, error.message);
     }
-    const { _id: owner } = req.user;
-    if (owner !== req.user) {
-      HttpError(404, "User not found");
-    }
-    const result = await Contacts.findByIdAndUpdate(owner, req.body, {
+    const { id } = req.params;
+    const result = await Contacts.findByIdAndUpdate(id, req.body, {
       new: true
     });
     if (!result) {
@@ -97,7 +92,7 @@ const favoriteContacts = async (req, res, next) => {
     if (error) {
       HttpError(400, error.message);
     }
-    const { _id: owner } = req.user;
+    const { _id: owner } = req.params;
     if (owner !== req.user) {
       HttpError(404, "User not found");
     }
