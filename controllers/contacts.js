@@ -9,25 +9,15 @@ const {
 const getAllContacts = async (req, res, next) => {
   try {
     const { _id: owner } = req.user;
-    const { page = 1, limit = 5, favorite = "" } = req.query;
+    const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
-    if (favorite === "") {
-      const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
-        skip,
-        limit
-      }).populate("owner", "name email");
-      res.json(result);
-    } else {
-      const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
-        skip,
-        limit
-      })
-        .populate("owner", "name email")
-        .find({ favorite: { $eq: favorite } });
-      res.json(result);
-    }
-  } catch (err) {
-    next(err);
+    const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
+      skip,
+      limit
+    }).populate("owner", "name email");
+    res.json(result);
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -39,8 +29,8 @@ const getContactId = async (req, res, next) => {
       HttpError(404, "Not found");
     }
     res.json(result);
-  } catch (err) {
-    next(err);
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -55,8 +45,8 @@ const createContact = async (req, res, next) => {
     const { _id: owner } = req.user;
     const result = await Contacts.create({ ...body, owner });
     res.status(201).json(result);
-  } catch (err) {
-    next(err);
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -72,8 +62,8 @@ const deleteContact = async (req, res, next) => {
     res.json({
       message: "Delete success"
     });
-  } catch (err) {
-    next(err);
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -85,6 +75,9 @@ const updateContact = async (req, res, next) => {
       HttpError(400, error.message);
     }
     const { _id: owner } = req.user;
+    if (owner !== req.user) {
+      HttpError(404, "User not found");
+    }
     const result = await Contacts.findByIdAndUpdate(owner, req.body, {
       new: true
     });
@@ -92,8 +85,8 @@ const updateContact = async (req, res, next) => {
       HttpError(404, "Not found");
     }
     res.json(result);
-  } catch (err) {
-    next(err);
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -104,7 +97,10 @@ const favoriteContacts = async (req, res, next) => {
     if (error) {
       HttpError(400, error.message);
     }
-    const { _id: owner } = req.params;
+    const { _id: owner } = req.user;
+    if (owner !== req.user) {
+      HttpError(404, "User not found");
+    }
     const result = await Contacts.findByIdAndUpdate(owner, req.body, {
       new: true
     });
@@ -112,8 +108,8 @@ const favoriteContacts = async (req, res, next) => {
       throw HttpError(404, "Not found");
     }
     res.status(201).json(result);
-  } catch (err) {
-    next(err);
+  } catch {
+    next(HttpError(404));
   }
 };
 
