@@ -17,8 +17,7 @@ const updateSchemas = Joi.object({
   phone: Joi.string().min(5).max(12)
 });
 
-const updateFavoriteSchemas = Joi.object(
- {
+const updateFavoriteSchemas = Joi.object({
   favorite: Joi.boolean().required()
 });
 

@@ -46,8 +46,8 @@ const getContactId = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
-  const body = req.body;
   try {
+    const { body } = req;
     const { error } = addSchemas.validate(body);
     if (error) {
       HttpError(400, error.message);
@@ -87,22 +87,22 @@ const updateContact = async (req, res, next) => {
     }
     const { _id: owner } = req.user;
     const { id } = req.params;
-
-    const result = await Contacts.findByIdAndUpdate(id, body, owner);
+    if (req.query.id !== id) {
+      HttpError(404, "User not privete");
+    }
+    const result = await Contacts.findByIdAndUpdate(id, body, { owner });
     if (!result) {
       HttpError(404, "Not found");
     }
-    res.json(result);
+    res.status(200).json(result);
   } catch {
     next(HttpError(404));
   }
 };
 
 const favoriteContacts = async (req, res, next) => {
-  const body = req.body;
   try {
-    const { error } = updateFavoriteSchemas.validate(body);
-
+    const { error } = updateFavoriteSchemas.validate(req.body);
     if (error) {
       HttpError(400, error.message);
     }
@@ -111,7 +111,7 @@ const favoriteContacts = async (req, res, next) => {
     if (owner !== req.user) {
       HttpError(404, "User not found");
     }
-    const result = await Contacts.findByIdAndUpdate(owner, id, body);
+    const result = await Contacts.findByIdAndUpdate(owner, id, req.body);
     if (!result) {
       throw HttpError(404, "Not found");
     }
