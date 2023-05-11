@@ -1,4 +1,5 @@
 const { Schema, model } = require("mongoose");
+const hendleMongooseError = require("../helpers/hendleError");
 
 const contactSchema = new Schema(
   {
@@ -7,18 +8,29 @@ const contactSchema = new Schema(
       required: [true, "Set name for contact"]
     },
     email: {
-      type: String
+      type: String,
+      unique: true,
+      required: [true, "Set email for contact"]
     },
     phone: {
-      type: String
+      type: String,
+      unique: true,
+      required: [true, "Set phone for contact"]
     },
+
     favorite: {
       type: Boolean,
       default: false
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "users"
     }
   },
-  { versionKey: false }
+  { versionKey: false, timestamps: true }
 );
+
+contactSchema.post("save", hendleMongooseError);
 
 const Contact = model("contacts", contactSchema);
 
