@@ -9,27 +9,52 @@ const {
 const getAllContacts = async (req, res, next) => {
   try {
     const { _id: owner } = req.user;
-    const { page = 1, limit = 5, favorite = "" } = req.query;
+    const {
+      page = 1,
+      limit = 5,
+      favorite = "",
+      name = "",
+      email = ""
+    } = req.query;
     const skip = (page - 1) * limit;
-    if (!favorite === "" ) {
+    if (favorite === "" && name) {
       const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
         skip,
         limit
       }).populate("owner", "name email");
       res.json(result);
+    }
+    if (name === "") {
+      const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
+        skip,
+        limit
+      }).populate("owner", "favorite email");
+      res.json(result);
+      if (email === "") {
+        const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
+          skip,
+          limit
+        }).populate("owner", "favorite name");
+        res.json(result);
+      }
     } else {
       const result = await Contacts.find({ owner }, "-createdAt -updatedAt", {
         skip,
         limit
       })
         .populate("owner", "name email")
-        .find({ favorite: { $eq: favorite } });
+        .find({
+          favorite: { $eq: favorite },
+          name: { $eq: name },
+          email: { $eq: email }
+        });
       res.json(result);
     }
   } catch {
     next(HttpError(404));
   }
 };
+
 const getContactId = async (req, res, next) => {
   try {
     const owner = req.user._id;
