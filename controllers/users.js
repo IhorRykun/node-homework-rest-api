@@ -3,8 +3,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { registerSchemas, loginSchemas } = require("../schemas/users");
 const Users = require("../models/users");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs");
 
 require("dotenv").config();
+const avatarsDir = path.join(__dirname, "../", "public", "avatar");
 
 const { SECRET_KEY } = process.env;
 
@@ -20,16 +24,22 @@ const userRegistration = async (req, res, next) => {
       throw HttpError(409, "Email in use");
     }
     const hasPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
+    const newUsers = await Users.create({
+      ...req.body,
+      password: hasPassword,
+      avatarURL
+    });
 
-    const newUsers = await Users.create({ ...req.body, password: hasPassword });
     res.status(201).json({
       user: {
         email: newUsers.email,
-        subscription: "starter"
+        subscription: "starter",
+        avatarURL: newUsers.avatarURL
       }
     });
   } catch {
-    next(HttpError(400));
+    next(HttpError(404));
   }
 };
 
@@ -68,7 +78,21 @@ const userLogin = async (req, res, next) => {
   }
 };
 
+const updateAvatar = async (req, res, next) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const resultUpload = path.join(avatarsDir, originalname);
+  await fs.rename(tempUpload, resultUpload);
+  const avatarURL = path.join("avatars", originalname);
+  await Users.findByIdAndUpdate(_id, { avatarURL });
+
+  res.json({
+    avatarURL
+  });
+};
+
 module.exports = {
   userRegistration,
-  userLogin
+  userLogin,
+  updateAvatar
 };
