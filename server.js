@@ -1,10 +1,13 @@
 const app = require("./app");
 require("dotenv").config();
 const mongoose = require("mongoose");
+const express = require("express");
 
 const { DB_HOST } = process.env;
 
 const { PORT } = process.env;
+
+app.use(express.static("public"));
 
 mongoose
   .connect(DB_HOST)

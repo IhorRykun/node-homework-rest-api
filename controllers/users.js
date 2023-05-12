@@ -3,10 +3,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { registerSchemas, loginSchemas } = require("../schemas/users");
 const Users = require("../models/users");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs/promises");
+const Jimp = require("jimp");
 
 require("dotenv").config();
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { SECRET_KEY } = process.env;
+const { PORT } = process.env;
 
 const userRegistration = async (req, res, next) => {
   try {
@@ -20,16 +26,22 @@ const userRegistration = async (req, res, next) => {
       throw HttpError(409, "Email in use");
     }
     const hasPassword = await bcrypt.hash(password, 10);
+    const avatarURL = gravatar.url(email);
+    const newUsers = await Users.create({
+      ...req.body,
+      password: hasPassword,
+      avatarURL
+    });
 
-    const newUsers = await Users.create({ ...req.body, password: hasPassword });
     res.status(201).json({
       user: {
         email: newUsers.email,
-        subscription: "starter"
+        subscription: "starter",
+        avatarURL: newUsers.avatarURL
       }
     });
   } catch {
-    next(HttpError(400));
+    next(HttpError(404));
   }
 };
 
@@ -68,7 +80,40 @@ const userLogin = async (req, res, next) => {
   }
 };
 
+const updateAvatar = async (req, res, next) => {
+  try {
+    const { _id, name } = req.user;
+    const { path: tempUpload, originalname } = req.file;
+    const fileName = `${name}_${originalname}`;
+
+    const resultUpload = path.join(avatarsDir, fileName);
+    await fs.rename(tempUpload, resultUpload);
+    const avatarURL = `http://localhost:${PORT}/avatars/${fileName}`;
+    console.log(avatarURL);
+
+    // Jimp.read(avatarURL).then((avatar) => {
+    //   return avatar.resize(250, 250).write(avatarURL);
+    // });
+
+    Jimp.read(avatarURL, (err, avatar) => {
+      if (err) throw err;
+      avatar.resize(250, 250).write(`public/avatars/${fileName}`, () => {
+        fs.unlink(req.file.path);
+      });
+    });
+
+    await Users.findByIdAndUpdate(_id, { avatarURL });
+
+    res.json({
+      avatarURL
+    });
+  } catch {
+    next(HttpError(500));
+  }
+};
+
 module.exports = {
   userRegistration,
-  userLogin
+  userLogin,
+  updateAvatar
 };
