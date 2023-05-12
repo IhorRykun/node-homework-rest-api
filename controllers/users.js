@@ -5,10 +5,10 @@ const { registerSchemas, loginSchemas } = require("../schemas/users");
 const Users = require("../models/users");
 const gravatar = require("gravatar");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs/promises");
 
 require("dotenv").config();
-const avatarsDir = path.join(__dirname, "../", "public", "avatar");
+const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { SECRET_KEY } = process.env;
 
@@ -79,16 +79,20 @@ const userLogin = async (req, res, next) => {
 };
 
 const updateAvatar = async (req, res, next) => {
-  const { _id } = req.user;
-  const { path: tempUpload, originalname } = req.file;
-  const resultUpload = path.join(avatarsDir, originalname);
-  await fs.rename(tempUpload, resultUpload);
-  const avatarURL = path.join("avatars", originalname);
-  await Users.findByIdAndUpdate(_id, { avatarURL });
+  try {
+    const { _id } = req.user;
+    const { path: tempUpload, originalname } = req.file;
+    const resultUpload = path.join(avatarsDir, originalname);
+    await fs.rename(tempUpload, resultUpload);
+    const avatarURL = path.join("avatars", originalname);
+    await Users.findByIdAndUpdate(_id, { avatarURL });
 
-  res.json({
-    avatarURL
-  });
+    res.json({
+      avatarURL
+    });
+  } catch {
+    next(HttpError(500));
+  }
 };
 
 module.exports = {

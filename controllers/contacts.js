@@ -5,6 +5,7 @@ const {
   addSchemas,
   updateFavoriteSchemas
 } = require("../schemas/contacts");
+const gravatar = require("gravatar");
 
 const getAllContacts = async (req, res, next) => {
   try {
@@ -73,18 +74,17 @@ const getContactId = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
-  try {
-    const body = req.body;
-    const { error } = addSchemas.validate(body);
-    if (error) {
-      HttpError(400, error.message);
-    }
-    const { _id: owner } = req.user;
-    const result = await Contacts.create({ ...body, owner });
-    res.status(201).json(result);
-  } catch {
-    next(HttpError(404));
+  const body = req.body;
+  const { name } = req.body;
+  const { error } = addSchemas.validate(body);
+  if (error) {
+    HttpError(400, error.message);
   }
+  const avatar = gravatar.url(name);
+  const { _id: owner } = req.user;
+  const result = await Contacts.create({ ...body, owner, avatar });
+  res.status(201).json(result);
+
 };
 
 const deleteContact = async (req, res, next) => {
