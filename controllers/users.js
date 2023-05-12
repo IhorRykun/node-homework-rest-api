@@ -6,11 +6,13 @@ const Users = require("../models/users");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs/promises");
+const Jimp = require("jimp");
 
 require("dotenv").config();
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { SECRET_KEY } = process.env;
+const { PORT } = process.env;
 
 const userRegistration = async (req, res, next) => {
   try {
@@ -80,11 +82,17 @@ const userLogin = async (req, res, next) => {
 
 const updateAvatar = async (req, res, next) => {
   try {
-    const { _id } = req.user;
+    const { _id, email } = req.user;
     const { path: tempUpload, originalname } = req.file;
-    const resultUpload = path.join(avatarsDir, originalname);
+    const fileName = `${email}_${originalname}`;
+
+    const resultUpload = path.join(avatarsDir, fileName);
     await fs.rename(tempUpload, resultUpload);
-    const avatarURL = path.join("avatars", originalname);
+    const avatarURL = `http://localhost:${PORT}/avatars/${fileName}`;
+    Jimp.read(avatarURL).then((avatar) => {
+      return avatar.resize(250, 250).write(avatarURL);
+    });
+
     await Users.findByIdAndUpdate(_id, { avatarURL });
 
     res.json({
