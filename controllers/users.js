@@ -82,15 +82,24 @@ const userLogin = async (req, res, next) => {
 
 const updateAvatar = async (req, res, next) => {
   try {
-    const { _id, email } = req.user;
+    const { _id, name } = req.user;
     const { path: tempUpload, originalname } = req.file;
-    const fileName = `${email}_${originalname}`;
+    const fileName = `${name}_${originalname}`;
 
     const resultUpload = path.join(avatarsDir, fileName);
     await fs.rename(tempUpload, resultUpload);
     const avatarURL = `http://localhost:${PORT}/avatars/${fileName}`;
-    Jimp.read(avatarURL).then((avatar) => {
-      return avatar.resize(250, 250).write(avatarURL);
+    console.log(avatarURL);
+
+    // Jimp.read(avatarURL).then((avatar) => {
+    //   return avatar.resize(250, 250).write(avatarURL);
+    // });
+
+    Jimp.read(avatarURL, (err, avatar) => {
+      if (err) throw err;
+      avatar.resize(250, 250).write(`public/avatars/${fileName}`, () => {
+        fs.unlink(req.file.path);
+      });
     });
 
     await Users.findByIdAndUpdate(_id, { avatarURL });
