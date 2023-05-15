@@ -7,12 +7,15 @@ const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
+const { v4 } = require("uuid");
+const sendEmail = require("../helpers/sendEmail");
 
 require("dotenv").config();
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { SECRET_KEY } = process.env;
 const { PORT } = process.env;
+const localhostserver = `hhttp://localhost:${PORT}/users/Verify`;
 
 const userRegistration = async (req, res, next) => {
   try {
@@ -27,11 +30,21 @@ const userRegistration = async (req, res, next) => {
     }
     const hasPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
+    const verificationToken = v4();
     const newUsers = await Users.create({
       ...req.body,
       password: hasPassword,
-      avatarURL
+      avatarURL,
+      verificationToken
     });
+
+    const verifyEmail = {
+      to: email,
+      subject: "Verify email",
+      html: `<a target="_blank" href="${localhostserver}/${verificationToken}">Click verify email </a>`
+    };
+
+    await sendEmail(verifyEmail);
 
     res.status(201).json({
       user: {
@@ -41,7 +54,7 @@ const userRegistration = async (req, res, next) => {
       }
     });
   } catch {
-    next(HttpError(404));
+    HttpError(404);
   }
 };
 
