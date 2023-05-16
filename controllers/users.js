@@ -8,14 +8,16 @@ const path = require("path");
 const fs = require("fs/promises");
 const Jimp = require("jimp");
 const { v4 } = require("uuid");
-const sendEmail = require("../helpers/sendEmail");
+const emailOptions = require("../helpers/sendEmail");
+const createVerifyEmail = require("../helpers/createVerifyEmail");
+
+// const createVerifyEmail = require("../helpers/createVerifyEmail");
 
 require("dotenv").config();
 const avatarsDir = path.join(__dirname, "../", "public", "avatars");
 
 const { SECRET_KEY } = process.env;
 const { PORT } = process.env;
-const localhostserver = `hhttp://localhost:${PORT}/users/Verify`;
 
 const userRegistration = async (req, res, next) => {
   try {
@@ -38,23 +40,39 @@ const userRegistration = async (req, res, next) => {
       verificationToken
     });
 
-    const verifyEmail = {
-      to: email,
-      subject: "Verify email",
-      html: `<a target="_blank" href="${localhostserver}/${verificationToken}">Click verify email </a>`
-    };
+    const mail = createVerifyEmail(email, verificationToken);
 
-    await sendEmail(verifyEmail);
+    await emailOptions(mail);
 
     res.status(201).json({
       user: {
         email: newUsers.email,
         subscription: "starter",
-        avatarURL: newUsers.avatarURL
+        avatarURL: newUsers.avatarURL,
+        verificationToken: mail
       }
     });
   } catch {
     HttpError(404);
+  }
+};
+
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await Users.findOne({ verificationToken });
+    if (!user) {
+      HttpError(401, "Email not found");
+    }
+    await Users.findOneAndUpdate(user._id, {
+      verify: true,
+      verificationToken: ""
+    });
+    res.status(200).json({
+      message: "Email verify seccuse"
+    });
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -70,10 +88,16 @@ const userLogin = async (req, res, next) => {
     if (!user) {
       HttpError(401, "Email or password invalid");
     }
+
+    if (!user.verify) {
+      HttpError(404, "EUser not found'");
+    }
+
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
       HttpError(401, "Email or password invalid");
     }
+
     const payload = {
       id: user._id
     };
@@ -90,6 +114,27 @@ const userLogin = async (req, res, next) => {
     });
   } catch {
     next(HttpError(400));
+  }
+};
+
+const sendverifyEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await Users.findOne({ email });
+    if (!user) {
+      HttpError(401, "Email nod found");
+    }
+    if (user.verify) {
+      HttpError(401, "Email alredy verify");
+    }
+    const mail = createVerifyEmail(email, user.verificationToken);
+
+    await emailOptions(mail);
+    res.json({
+      message: "Verification email sent"
+    });
+  } catch {
+    next(HttpError(404));
   }
 };
 
@@ -128,5 +173,7 @@ const updateAvatar = async (req, res, next) => {
 module.exports = {
   userRegistration,
   userLogin,
-  updateAvatar
+  updateAvatar,
+  verifyEmail,
+  sendverifyEmail
 };

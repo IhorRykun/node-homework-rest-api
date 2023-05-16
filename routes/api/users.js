@@ -4,7 +4,9 @@ const getCurrent = require("../../controllers/getCurrent");
 const {
   userRegistration,
   userLogin,
-  updateAvatar
+  updateAvatar,
+  verifyEmail,
+  sendverifyEmail
 } = require("../../controllers/users");
 const logout = require("../../controllers/logout");
 const upload = require("../../middleware/upload");
@@ -12,6 +14,10 @@ const upload = require("../../middleware/upload");
 const router = express.Router();
 
 router.post("/register", userRegistration);
+
+router.get("/verify/:verificationToken", verifyEmail);
+
+router.post("/verify/", sendverifyEmail);
 
 router.post("/login", userLogin);
 
